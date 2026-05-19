@@ -45,7 +45,92 @@ The server provides a unified interface for working with Wiki.js that can be use
 - **STDIO**: for editor integration (Cursor, VS Code)
 - **HTTP**: for web integrations and API access
 
-## 🚀 Quick Start
+## 🐳 Docker (recommended)
+
+The fastest way to run the server is via Docker Compose. The container exposes the **HTTP MCP transport** on port `3200`, which speaks the standard MCP JSON-RPC 2.0 protocol (compatible with Claude Code, Claude Desktop, Cursor, etc).
+
+### 1. Clone
+
+```bash
+git clone https://github.com/adaniki-dev/wikijs-mcp-server.git
+cd wikijs-mcp-server
+```
+
+### 2. Create `.env`
+
+```bash
+cp env.example .env
+```
+
+Edit `.env` and set at least:
+
+```env
+WIKIJS_BASE_URL=https://your-wiki.example.com
+WIKIJS_TOKEN=your_wikijs_api_token
+WIKIJS_LOCALE=en
+
+# Optional — only if Wiki.js is behind Cloudflare Access (Zero Trust)
+CF_ACCESS_CLIENT_ID=xxxxxxxxxxxx.access
+CF_ACCESS_CLIENT_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+> **Important:** the `.env` format must be `KEY=value` (no spaces, no colons). Docker's `--env-file` does not accept YAML-style entries.
+
+### 3. Build and start
+
+```bash
+docker compose up -d --build
+```
+
+Check it is up:
+
+```bash
+docker compose logs -f wikijs-mcp
+```
+
+You should see something like:
+
+```
+🚀 MCP HTTP сервер запущен на порту 3200
+✅ Подключение к Wiki.js API установлено успешно
+📋 Доступно 17 инструментов: get_page, get_page_content, ...
+```
+
+### 4. Connect your MCP client
+
+Add this to your client's MCP config (e.g. `claude.json`, `.cursor/mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "wikijs": {
+      "type": "http",
+      "url": "http://localhost:3200/mcp"
+    }
+  }
+}
+```
+
+That's it — reconnect / restart your client and the 17 Wiki.js tools become available.
+
+### Useful commands
+
+```bash
+docker compose logs -f wikijs-mcp    # follow logs
+docker compose restart wikijs-mcp    # restart (after editing .env)
+docker compose down                  # stop and remove
+docker compose up -d --build         # rebuild and start
+```
+
+### Notes
+
+- If your Wiki.js itself runs in Docker on the same host, set `WIKIJS_BASE_URL=http://host.docker.internal:PORT` (Windows/macOS) or use a shared Docker network (Linux) so the MCP container can reach it.
+- **Cloudflare Access** support is built in — just set `CF_ACCESS_CLIENT_ID` and `CF_ACCESS_CLIENT_SECRET` and the server will attach the required headers on every GraphQL request.
+- `.env` is gitignored — never commit it.
+
+---
+
+## 🚀 Quick Start (without Docker)
 
 > **⚡ Want to start right now?** See [5-Minute Guide](./QUICK_START.md)
 
