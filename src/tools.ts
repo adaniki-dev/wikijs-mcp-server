@@ -527,6 +527,14 @@ class WikiJsAPI {
       console.log("[WikiJsAPI] Устанавливается заголовок Authorization.");
       this.client.setHeader("Authorization", `Bearer ${token}`);
     }
+
+    const cfId = process.env.CF_ACCESS_CLIENT_ID;
+    const cfSecret = process.env.CF_ACCESS_CLIENT_SECRET;
+    if (cfId && cfSecret) {
+      console.log("[WikiJsAPI] Adicionando headers CF-Access.");
+      this.client.setHeader("CF-Access-Client-Id", cfId);
+      this.client.setHeader("CF-Access-Client-Secret", cfSecret);
+    }
   }
 
   // Метод для генерации URL страницы
